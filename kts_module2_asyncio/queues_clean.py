@@ -1,6 +1,10 @@
 import asyncio
 
-""" Queue 'clean' example from lms-KTS content """
+"""
+Queue 'clean' example from lms-KTS content.
+
+(not full-working yet)
+"""
 
 
 async def vk_request(queue):
@@ -12,7 +16,7 @@ async def vk_request(queue):
 
 async def sender_worker(queue):
     while True:
-        events: list[dict] = await vk_request()
+        events: list[dict] = await vk_request(queue)
         for e in events:
             await queue.put()  # положить в очередь _данные_
 

@@ -17,8 +17,18 @@
 # Две самостоятельные функции, одна будет производить числа от 0 до бескон, а другая будет
 # сообщать какое-нить сообщение, в нашем случае - время.
 
+import os             # ДЛЯ ASYNC ОТЛАДКИ
 import asyncio
 from time import time
+import logging        # ДЛЯ ASYNC ОТЛАДКИ
+import warnings       # ДЛЯ ASYNC ОТЛАДКИ
+
+os.environ['PYTHONASYNCIODEBUG'] = '1'    # ДЛЯ ASYNC ОТЛАДКИ
+
+logging.basicConfig(level=logging.DEBUG)  # ДЛЯ ASYNC ОТЛАДКИ
+logging.getLogger("asyncio").setLevel(logging.DEBUG)   # ДЛЯ ASYNC ОТЛАДКИ
+
+warnings.resetwarnings()  # ДЛЯ ASYNC ОТЛАДКИ
 
 
 # @asyncio.coroutine  # из обычной ф-и создает корутину, основанную на генераторах (старый синтаксис)
@@ -53,5 +63,6 @@ if __name__ == '__main__':
     # )
     # loop.close()
     asyncio.run(    # новый синтаксис
-        main()
+        main(),
+        debug=True,  # УКАЗЫВАЕМ ПРИ ОТЛАДКЕ
     )
