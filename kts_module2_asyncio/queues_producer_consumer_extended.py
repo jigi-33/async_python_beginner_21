@@ -12,7 +12,7 @@ import asyncio
 
 async def consumer_receiver(n, q):
     print('consumer {}: starting'.format(n))
-    while True:                            # feature starting in queues !
+    while True:                            # use this feature on worker's starting with Queues !
         print('consumer {}: waiting for item'.format(n))
         item = await q.get()
         print('consumer {}: has item {}'.format(n, item))
@@ -28,19 +28,18 @@ async def consumer_receiver(n, q):
 
 async def producer_sender(q, num_workers):
     print('producer: starting')
-    # Add some numbers to the queue to simulate jobs
+    # Add some numbers(aka DATA) to the queue to simulate jobs
     for i in range(num_workers * 3):
         await q.put(i)
         print('producer: added task {} to the queue'.format(i))
 
-    # Add None entries in the queue
-    # to signal the consumers to exit!
+    # A FEATURE: add None entries in the queue to signal the receivers to exit!
     print('producer: adding stop signals to the queue')
     for i in range(num_workers):
         await q.put(None)
-    print('producer: waiting for queue to empty')
-    await q.join()
-    print('producer: ending')
+    print('producer: waiting for queue to empty...')
+    await q.join()  # the main worker waits for queue is empty
+    print('producer: ending!')
 
 
 async def main(loop, num_consumers):
@@ -58,10 +57,13 @@ async def main(loop, num_consumers):
     prod = loop.create_task(producer_sender(q, num_consumers))
 
     # Wait for all-the-coroutines to finish
-    await asyncio.wait(consumers + [prod])
+    await asyncio.wait(consumers + [prod])  # odd argument syntax(!)
 
 
 if __name__ == '__main__':
+    """
+    Scenario/loop with ending with None-statement in 'producer' coro
+    """
     event_loop = asyncio.get_event_loop()
     try:
         event_loop.run_until_complete(main(event_loop, 2))

@@ -1,16 +1,15 @@
 import asyncio
 from codetiming import Timer
 
-
 """
-У меня такой пример уже был.
+такой пример по Queues уже был, но здесь лучше прокомментировано.
 """
 
 
 async def task(name, work_queue):
     timer = Timer(text=f"Task {name} elapsed time: {{:.1f}}")
     while not work_queue.empty():
-        delay = await work_queue.get()
+        delay = await work_queue.get()  # взять _данные_ из очереди - уже без аргумента(!)
         print(f"Task {name} running")
         timer.start()
         await asyncio.sleep(delay)
@@ -19,16 +18,16 @@ async def task(name, work_queue):
 
 async def main():
     """
-    Это главная точка входа для главной программы
+    функция main - по канонам основная точка входа в асинхронную программу
     """
-    # Создание очереди работы
+    # создаем очередь задач(тасок)
     work_queue = asyncio.Queue()
 
-    # Помещение работы в очередь
+    # помещаем в очередь _данные_
     for work in [15, 10, 5, 2]:
-        await work_queue.put(work)
+        await work_queue.put(work)  # положить _данные_ в очередь
 
-    # Запуск задач при помощи контекста Таймера:
+    # помещаем & запускаем таски при помощи контекста Таймера, нужного для корректного замера времени.
     with Timer(text="\nTotal elapsed time: {:.1f}"):
         await asyncio.gather(
             asyncio.create_task(task("One", work_queue)),

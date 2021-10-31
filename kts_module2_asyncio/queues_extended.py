@@ -4,42 +4,45 @@ import time
 
 
 async def worker(name, queue):
-    while True:
-        # Get a "work item" out of the queue.
-        sleep_for = await queue.get()
+    while True:  # если про очереди, то при воркере всегда начинать с while true
+        # Получаем "рабочую единицу" данных, которые выходят из очереди.
+        sleep_for = await queue.get()  # внутри воркера _данные_ достаются из очереди
 
-        # Sleep for the "sleep_for" seconds.
+        # Sleep for the "sleep_for" seconds (эмулятор полезной работы)
         await asyncio.sleep(sleep_for)
 
-        # Notify the queue that the "work item" has been processed.
+        # Уведомить очередь что текущая рабочая "work item" has been processed.
         queue.task_done()
 
         print(f'{name} has slept for {sleep_for:.2f} seconds')
 
 
 async def main():
-    # Create a queue that we will use to store our "workload".
+    # Создаем очередь, которая используется для загрузки ворклоада/пула активными задачами.
     queue = asyncio.Queue()
 
-    # Generate random timings and put them into the queue.
+    # Generate random timings (our data) and put() them into the queue
     total_sleep_time = 0
     for _ in range(20):
-        sleep_for = random.uniform(0.05, 1.0)
+        sleep_for = random.uniform(0.05, 1.0)  # формирование _данных_ для складывания их в очередь с put
         total_sleep_time += sleep_for
-        queue.put_nowait(sleep_for)
+        queue.put_nowait(sleep_for)  # в большинстве случаев nowait использ. не треба - лишь обычный put
 
-    # Create three worker tasks to process the queue concurrently.
+    # Создаем три рабочие Таски для кооперативно-многозадачно обработки в нашей очереди
     tasks = []
     for i in range(3):
         task = asyncio.create_task(worker(f'worker-{i}', queue))
         tasks.append(task)
 
-    # Wait until the queue is fully processed.
+    # waiting until the queue is fully processed
     started_at = time.monotonic()
-    await queue.join()
+    await queue.join()   # join() будет ждать, пока очередь не станет абсолютно пустой
     total_slept_for = time.monotonic() - started_at
 
-    # Cancel our worker tasks.
+    # Здесь gather() и wait() не используется, т.к. используется join() и по бизнес логике,
+    # задачи в конце отменяются.
+
+    # Отменить (очистить) наши рабочие таски после опустошения очереди (по завершению 1 цикла)
     for task in tasks:
         task.cancel()
 
